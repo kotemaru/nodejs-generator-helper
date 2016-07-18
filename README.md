@@ -59,14 +59,14 @@ The function of return value calls with any argument.
 
 Argument "generator" is generate function.
 
-Argument "callback" is called at the end of the generator function.
-The signature is the callback (error, value).
+Argument "callback" is called at the end of the generator function.<br>
+The signature is the callback (error, value).<br>
 "Value" is set to the return value of the generator function.
 
 
 ### `this' in Generator function
 
-Generator functions that are performed by the "GeneratorHelper#exec()" will have a special "this".
+Generator functions that are performed by the "GeneratorHelper#exec()" will have a special "this".<br>
 It has a function to assist in the execution of the Iterator.
 
 #### this#next(value)
@@ -76,13 +76,13 @@ Argument "value" will be the return value of the yield.
 
 #### this#callback(error, value)
 
-Internally, it simply calls the "next(value)".
-Signature matches the general callback functions of Node.
+Internally, it simply calls the "next(value)".<br>
+Signature matches the general callback functions of Node.<br>
 "Error" is returned to the callback of "GeneratorHelper#exec()".
 
 #### this#exec(generator,callback)
 
-It is the same as the "GeneratorHelper#exec()".
+It is the same as the "GeneratorHelper#exec()".<br>
 However, the default of the argument "callback" is "this.callback".
 
 ## GeneratorHelper source code.
