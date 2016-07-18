@@ -91,13 +91,12 @@ GeneratorHelper.js source code is a little.
 
 ```js
 'use strict'
-
 var TAG = "GeneratorHelper:";
 
 function exec(generator, callback) {
     function executor() {
-        var _this = {};
-        var iterator = generator.apply(_this, arguments);
+        let _this = {};
+        let iterator = generator.apply(_this, arguments);
         _this.next = function(arg) {
             _this.isRunning = true;
             try {
