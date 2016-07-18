@@ -1,10 +1,8 @@
-
 'use strict'
-
 var TAG = "GeneratorHelper:";
 
 function exec(generator, callback) {
-    function runner() {
+    function executor() {
         var _this = {};
         var iterator = generator.apply(_this, arguments);
         _this.next = function(arg) {
@@ -30,13 +28,10 @@ function exec(generator, callback) {
                 _this.next(val);
             }
         };
-        _this.callbackNoError = function(val) {
-            _this.next(val);
-        };
         _this.exec = thisExec;
         _this.next();
     }
-    return runner;
+    return executor;
 }
 
 function thisExec(generator, callback) {

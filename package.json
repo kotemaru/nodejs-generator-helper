@@ -1,11 +1,11 @@
 {
-  "name": "test",
+  "name": "generator-helper",
   "version": "1.0.0",
   "main": "GeneratorHelper.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "author": "kotemaru@ktoemaru.org",
+  "license": "APL/2.0",
+  "description": "Generator/Iterator running helper."
 }
