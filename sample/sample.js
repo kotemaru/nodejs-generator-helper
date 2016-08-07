@@ -3,12 +3,6 @@
 var YieldHelper = require('../YieldHelper');
 var Fs = require('fs');
 
-YieldHelper.exec(fileTree,callback)(".", []);
-function callback(err, files) {
-    if (err) throw err;
-    console.log(files.join("\n"));    
-}
-
 function* fileTree(path, list) {
     let stat = yield Fs.stat(path, this.callback);
     if (stat.isDirectory()) {
@@ -23,3 +17,8 @@ function* fileTree(path, list) {
     return list;
 }
 
+function callback(err, files) {
+    if (err) throw err;
+    console.log(files.join("\n"));    
+}
+YieldHelper.exec(fileTree,callback)(".", []);
