@@ -4,20 +4,15 @@ This helps the asynchronous processing using the generator functions.
 
 ## Example
 
+### Async I/O
+
 This is a sample to search directories recursively.<br>
 All I/O processing is performed asynchronously.
 
 ```js
 'use strict'
-
 var YieldHelper = require('../YieldHelper');
 var Fs = require('fs');
-
-YieldHelper.exec(fileTree,callback)(".", []);
-function callback(err, files) {
-    if (err) throw err;
-    console.log(files.join("\n"));    
-}
 
 function* fileTree(path, list) {
     let stat = yield Fs.stat(path, this.callback);
@@ -32,6 +27,12 @@ function* fileTree(path, list) {
     }
     return list;
 }
+
+function callback(err, files) {
+    if (err) throw err;
+    console.log(files.join("\n"));    
+}
+YieldHelper.exec(fileTree,callback)(".", []);
 ```
 
 This is the result of executing the sample.
@@ -47,6 +48,38 @@ This is the result of executing the sample.
 ./test/test1.js
 ```
 
+### Async sleep
+
+Implement a sleep without stopping the nodejs.
+
+```js
+'use strict'
+var YieldHelper = require('../YieldHelper');
+
+function* sleep(ms) {
+    let self = this;
+    let current = new Date().getTime();
+    let sleeped = yield setTimeout(function(){
+        self.next(new Date().getTime() - current);
+    }, ms);
+    return sleeped;
+}
+
+function* sample() {
+    console.log(new Date(), "sleeping");
+    let sleeped = yield this.exec(sleep)(3000); // default callback is 'this.callback'.
+    console.log(new Date(), "wake up=",sleeped);
+}
+
+YieldHelper.exec(sample)();
+```
+
+This is the result of executing the sleep sample.
+
+```
+Sun Aug 07 2016 02:59:18 GMT+0000 (UTC) 'sleeping'
+Sun Aug 07 2016 02:59:21 GMT+0000 (UTC) 'wake up=' 3003
+```
 
 ## API's
 
