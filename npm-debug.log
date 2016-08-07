@@ -1,0 +1,100 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/home/ubuntu/.nvm/versions/node/v4.4.5/bin/node',
+1 verbose cli   '/home/ubuntu/.nvm/versions/node/v4.4.5/bin/npm',
+1 verbose cli   'publish' ]
+2 info using npm@2.15.5
+3 info using node@v4.4.5
+4 verbose publish [ '.' ]
+5 silly cache add args [ '.', null ]
+6 verbose cache add spec .
+7 silly cache add parsed spec Result {
+7 silly cache add   raw: '.',
+7 silly cache add   scope: null,
+7 silly cache add   name: null,
+7 silly cache add   rawSpec: '.',
+7 silly cache add   spec: '/home/ubuntu/workspace',
+7 silly cache add   type: 'directory' }
+8 verbose addLocalDirectory /home/ubuntu/.npm/yield-helper/0.0.1/package.tgz not in flight; packing
+9 verbose correctMkdir /home/ubuntu/.npm correctMkdir not in flight; initializing
+10 verbose tar pack [ '/home/ubuntu/.npm/yield-helper/0.0.1/package.tgz',
+10 verbose tar pack   '/home/ubuntu/workspace' ]
+11 verbose tarball /home/ubuntu/.npm/yield-helper/0.0.1/package.tgz
+12 verbose folder /home/ubuntu/workspace
+13 info prepublish yield-helper@0.0.1
+14 verbose addLocalTarball adding from inside cache /home/ubuntu/.npm/yield-helper/0.0.1/package.tgz
+15 verbose correctMkdir /home/ubuntu/.npm correctMkdir not in flight; initializing
+16 silly cache afterAdd yield-helper@0.0.1
+17 verbose afterAdd /home/ubuntu/.npm/yield-helper/0.0.1/package/package.json not in flight; writing
+18 verbose correctMkdir /home/ubuntu/.npm correctMkdir not in flight; initializing
+19 verbose afterAdd /home/ubuntu/.npm/yield-helper/0.0.1/package/package.json written
+20 silly publish { name: 'yield-helper',
+20 silly publish   version: '0.0.1',
+20 silly publish   main: 'YieldHelper.js',
+20 silly publish   scripts: { test: 'mocha' },
+20 silly publish   author: { name: 'kotemaru@ktoemaru.org' },
+20 silly publish   license: 'APL/2.0',
+20 silly publish   description: 'Generator/Iterator running helper.',
+20 silly publish   readme: '# Yield Helper\n\nThis helps the asynchronous processing using the generator functions.\n\n## Example\n\n### Async I/O\n\nThis is a sample to search directories recursively.<br>\nAll I/O processing is performed asynchronously.\n\n```js\n\'use strict\'\nvar YieldHelper = require(\'yield-helper\');\nvar Fs = require(\'fs\');\n\nfunction* fileTree(path, list) {\n    let stat = yield Fs.stat(path, this.callback);\n    if (stat.isDirectory()) {\n        list.push(path + "/");\n        let files = yield Fs.readdir(path, this.callback);\n        for (let i = 0; i < files.length; i++) {\n            yield this.exec(fileTree)(path + "/" + files[i], list);\n        }\n    } else {\n        list.push(path);\n    }\n    return list;\n}\n\nfunction callback(err, files) {\n    if (err) throw err;\n    console.log(files.join("\\n"));    \n}\nYieldHelper.exec(fileTree,callback)(".", []);\n```\n\nThis is the result of executing the sample.\n\n```\n./YieldHelper.js\n./README.md\n./package.json\n./sample/\n./sample/sample.js\n./test/\n./test/test.txt\n./test/test1.js\n```\n\n### Async sleep\n\nImplement a sleep without stopping the nodejs.\n\n```js\n\'use strict\'\nvar YieldHelper = require(\'yield-helper\');\n\nfunction* sleep(ms) {\n    let self = this;\n    let current = new Date().getTime();\n    let sleeped = yield setTimeout(function(){\n        self.next(new Date().getTime() - current);\n    }, ms);\n    return sleeped;\n}\n\nfunction* sample() {\n    console.log(new Date(), "sleeping");\n    let sleeped = yield this.exec(sleep)(3000); // default callback is \'this.callback\'.\n    console.log(new Date(), "wake up=",sleeped);\n}\n\nYieldHelper.exec(sample)();\n```\n\nThis is the result of executing the sleep sample.\n\n```\nSun Aug 07 2016 02:59:18 GMT+0000 (UTC) \'sleeping\'\nSun Aug 07 2016 02:59:21 GMT+0000 (UTC) \'wake up=\' 3003\n```\n\n## API\'s\n\n### YieldHelper\n\n#### YieldHelper#exec(generator,callback)\n\nConvert the generator function into an executable function.<br>\nThe function of return value calls with any argument.\n\nArgument "generator" is generate function.\n\nArgument "callback" is called at the end of the generator function.<br>\nThe signature is the callback (error, value).<br>\n"Value" is set to the return value of the generator function.\n\n\n### `this\' in Generator function\n\nGenerator functions that are performed by the "YieldHelper#exec()" will have a special "this".<br>\nIt has a function to assist in the execution of the Iterator.\n\n#### this#next(value)\n\nAdvances one iterator that is stopped at the yield.<br>\nArgument "value" will be the return value of the yield.\n\n#### this#callback(error, value)\n\nInternally, it simply calls the "next(value)".<br>\nSignature matches the general callback functions of Node.<br>\n"Error" is returned to the callback of "YieldHelper#exec()".\n\n#### this#exec(generator,callback)\n\nIt is the same as the "YieldHelper#exec()".<br>\nHowever, the default of the argument "callback" is "this.callback".\n\n## YieldHelper source code.\n\nYieldHelper.js source code is a little.\n\n```js\n\'use strict\'\nvar TAG = "YieldHelper:";\n\nfunction exec(generator, callback) {\n    function executor() {\n        let _this = {};\n        let iterator = generator.apply(_this, arguments);\n        _this.next = function(arg) {\n            _this.isRunning = true;\n            try {\n                let rc = iterator.next(arg);\n                if (rc.done && callback) callback(null, rc.value);\n            } catch (err) {\n                if (callback) callback(err);\n            } finally {\n                _this.isRunning = false;\n            }\n        };\n        _this.callback = function(err, val) {\n            if (err) {\n                if (callback) callback(err);\n                else throw err;\n                return;\n            }\n            if (_this.isRunning) {\n                setTimeout(function() {_this.next(val);}, 1);\n            } else {\n                _this.next(val);\n            }\n        };\n        _this.exec = thisExec;\n        _this.next();\n    }\n    return executor;\n}\n\nfunction thisExec(generator, callback) {\n    if (callback === undefined) callback = this.callback;\n    return exec(generator, callback);\n}\n\nexports.exec = exec;\n```\n',
+20 silly publish   readmeFilename: 'README.md',
+20 silly publish   gitHead: '52cbf76255156b29fed1367080f2d996e211f831',
+20 silly publish   _id: 'yield-helper@0.0.1',
+20 silly publish   _shasum: '5329ae46fa7292841e8a409994d89e06518bf892',
+20 silly publish   _from: '.' }
+21 verbose getPublishConfig undefined
+22 silly mapToRegistry name yield-helper
+23 silly mapToRegistry using default registry
+24 silly mapToRegistry registry https://registry.npmjs.org/
+25 silly mapToRegistry data Result {
+25 silly mapToRegistry   raw: 'yield-helper',
+25 silly mapToRegistry   scope: null,
+25 silly mapToRegistry   name: 'yield-helper',
+25 silly mapToRegistry   rawSpec: '',
+25 silly mapToRegistry   spec: 'latest',
+25 silly mapToRegistry   type: 'tag' }
+26 silly mapToRegistry uri https://registry.npmjs.org/yield-helper
+27 verbose publish registryBase https://registry.npmjs.org/
+28 silly publish uploading /home/ubuntu/.npm/yield-helper/0.0.1/package.tgz
+29 verbose request uri https://registry.npmjs.org/yield-helper
+30 verbose request sending authorization for write operation
+31 info attempt registry request try #1 at 3:47:05 AM
+32 verbose request using bearer token for auth
+33 verbose request id db5575444ff13809
+34 http request PUT https://registry.npmjs.org/yield-helper
+35 http 403 https://registry.npmjs.org/yield-helper
+36 verbose headers { 'content-type': 'application/json',
+36 verbose headers   'cache-control': 'max-age=300',
+36 verbose headers   'content-length': '95',
+36 verbose headers   'accept-ranges': 'bytes',
+36 verbose headers   date: 'Sun, 07 Aug 2016 03:47:06 GMT',
+36 verbose headers   via: '1.1 varnish',
+36 verbose headers   connection: 'keep-alive',
+36 verbose headers   'x-served-by': 'cache-hkg6826-HKG',
+36 verbose headers   'x-cache': 'MISS',
+36 verbose headers   'x-cache-hits': '0',
+36 verbose headers   'x-timer': 'S1470541625.525242,VS0,VE814',
+36 verbose headers   vary: 'Accept-Encoding' }
+37 verbose request invalidating /home/ubuntu/.npm/registry.npmjs.org/yield-helper on PUT
+38 error publish Failed PUT 403
+39 verbose stack Error: "You cannot publish over the previously published version 0.0.1." : yield-helper
+39 verbose stack     at makeError (/home/ubuntu/.nvm/versions/node/v4.4.5/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:264:12)
+39 verbose stack     at CachingRegistryClient.<anonymous> (/home/ubuntu/.nvm/versions/node/v4.4.5/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:252:14)
+39 verbose stack     at Request._callback (/home/ubuntu/.nvm/versions/node/v4.4.5/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:172:14)
+39 verbose stack     at Request.self.callback (/home/ubuntu/.nvm/versions/node/v4.4.5/lib/node_modules/npm/node_modules/request/request.js:200:22)
+39 verbose stack     at emitTwo (events.js:87:13)
+39 verbose stack     at Request.emit (events.js:172:7)
+39 verbose stack     at Request.<anonymous> (/home/ubuntu/.nvm/versions/node/v4.4.5/lib/node_modules/npm/node_modules/request/request.js:1067:10)
+39 verbose stack     at emitOne (events.js:82:20)
+39 verbose stack     at Request.emit (events.js:169:7)
+39 verbose stack     at IncomingMessage.<anonymous> (/home/ubuntu/.nvm/versions/node/v4.4.5/lib/node_modules/npm/node_modules/request/request.js:988:12)
+40 verbose statusCode 403
+41 verbose pkgid yield-helper
+42 verbose cwd /home/ubuntu/workspace
+43 error Linux 4.2.0-c9
+44 error argv "/home/ubuntu/.nvm/versions/node/v4.4.5/bin/node" "/home/ubuntu/.nvm/versions/node/v4.4.5/bin/npm" "publish"
+45 error node v4.4.5
+46 error npm  v2.15.5
+47 error code E403
+48 error "You cannot publish over the previously published version 0.0.1." : yield-helper
+49 error If you need help, you may report this error at:
+49 error     <https://github.com/npm/npm/issues>
+50 verbose exit [ 1, true ]

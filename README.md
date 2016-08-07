@@ -11,7 +11,7 @@ All I/O processing is performed asynchronously.
 
 ```js
 'use strict'
-var YieldHelper = require('../YieldHelper');
+var YieldHelper = require('yield-helper');
 var Fs = require('fs');
 
 function* fileTree(path, list) {
@@ -54,7 +54,7 @@ Implement a sleep without stopping the nodejs.
 
 ```js
 'use strict'
-var YieldHelper = require('../YieldHelper');
+var YieldHelper = require('yield-helper');
 
 function* sleep(ms) {
     let self = this;
