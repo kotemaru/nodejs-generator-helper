@@ -1,10 +1,10 @@
 'use strict'
 
 var assert = require('assert');
-var GeneratorHelper = require('../GeneratorHelper');
+var YieldHelper = require('../YieldHelper');
 var Fs = require('fs');
 
-describe('GeneratorHelper', function() {
+describe('YieldHelper', function() {
     this.timeout(5000);
     describe('Normal case', function() {
         it('a', function(done) {
@@ -22,14 +22,14 @@ describe('GeneratorHelper', function() {
                 assert.equal(count, 8, "count");
                 done();
             }
-            GeneratorHelper.exec(generator1, callbackDone)("test/test.txt", 1500);
-            GeneratorHelper.exec(generator1, callback)("test/test.txt", 1234);
-            GeneratorHelper.exec(generator1, callback)("test/test.txt", 1234);
-            GeneratorHelper.exec(generator1, callback)("test/test.txt", 1234);
-            GeneratorHelper.exec(generator1, callback)("test/test.txt", 1234);
-            GeneratorHelper.exec(generator1, callback)("test/test.txt", 1234);
-            GeneratorHelper.exec(generator1, callback)("test/test.txt", 1234);
-            GeneratorHelper.exec(generator1, callback)("test/test.txt", 1234);
+            YieldHelper.exec(generator1, callbackDone)("test/test.txt", 1500);
+            YieldHelper.exec(generator1, callback)("test/test.txt", 1234);
+            YieldHelper.exec(generator1, callback)("test/test.txt", 1234);
+            YieldHelper.exec(generator1, callback)("test/test.txt", 1234);
+            YieldHelper.exec(generator1, callback)("test/test.txt", 1234);
+            YieldHelper.exec(generator1, callback)("test/test.txt", 1234);
+            YieldHelper.exec(generator1, callback)("test/test.txt", 1234);
+            YieldHelper.exec(generator1, callback)("test/test.txt", 1234);
         });
     });
     describe('Fail case', function() {
@@ -44,7 +44,7 @@ describe('GeneratorHelper', function() {
                     done(e);
                 }
             }
-            GeneratorHelper.exec(generator1, callback)("not-found.txt", 0);
+            YieldHelper.exec(generator1, callback)("not-found.txt", 0);
         });
     });
     describe('Fail case2', function() {
@@ -59,7 +59,7 @@ describe('GeneratorHelper', function() {
                     done(e);
                 }
             }
-            GeneratorHelper.exec(generator1, callback)("test/test.txt", -1);
+            YieldHelper.exec(generator1, callback)("test/test.txt", -1);
         });
     });
 });

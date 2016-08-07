@@ -1,4 +1,4 @@
-# Generator Helper
+# Yield Helper
 
 This helps the asynchronous processing using the generator functions.
 
@@ -10,22 +10,22 @@ All I/O processing is performed asynchronously.
 ```js
 'use strict'
 
-var GeneratorHelper = require('../GeneratorHelper');
+var YieldHelper = require('../YieldHelper');
 var Fs = require('fs');
 
-GeneratorHelper.exec(dirs,callback)(".", []);
+YieldHelper.exec(fileTree,callback)(".", []);
 function callback(err, files) {
     if (err) throw err;
     console.log(files.join("\n"));    
 }
 
-function* dirs(path, list) {
+function* fileTree(path, list) {
     let stat = yield Fs.stat(path, this.callback);
     if (stat.isDirectory()) {
         list.push(path + "/");
         let files = yield Fs.readdir(path, this.callback);
         for (let i = 0; i < files.length; i++) {
-            yield this.exec(dirs)(path + "/" + files[i], list);
+            yield this.exec(fileTree)(path + "/" + files[i], list);
         }
     } else {
         list.push(path);
@@ -37,7 +37,7 @@ function* dirs(path, list) {
 This is the result of executing the sample.
 
 ```
-./GeneratorHelper.js
+./YieldHelper.js
 ./README.md
 ./package.json
 ./sample/
@@ -50,9 +50,9 @@ This is the result of executing the sample.
 
 ## API's
 
-### GeneratorHelper
+### YieldHelper
 
-#### GeneratorHelper#exec(generator,callback)
+#### YieldHelper#exec(generator,callback)
 
 Convert the generator function into an executable function.<br>
 The function of return value calls with any argument.
@@ -66,7 +66,7 @@ The signature is the callback (error, value).<br>
 
 ### `this' in Generator function
 
-Generator functions that are performed by the "GeneratorHelper#exec()" will have a special "this".<br>
+Generator functions that are performed by the "YieldHelper#exec()" will have a special "this".<br>
 It has a function to assist in the execution of the Iterator.
 
 #### this#next(value)
@@ -78,20 +78,20 @@ Argument "value" will be the return value of the yield.
 
 Internally, it simply calls the "next(value)".<br>
 Signature matches the general callback functions of Node.<br>
-"Error" is returned to the callback of "GeneratorHelper#exec()".
+"Error" is returned to the callback of "YieldHelper#exec()".
 
 #### this#exec(generator,callback)
 
-It is the same as the "GeneratorHelper#exec()".<br>
+It is the same as the "YieldHelper#exec()".<br>
 However, the default of the argument "callback" is "this.callback".
 
-## GeneratorHelper source code.
+## YieldHelper source code.
 
-GeneratorHelper.js source code is a little.
+YieldHelper.js source code is a little.
 
 ```js
 'use strict'
-var TAG = "GeneratorHelper:";
+var TAG = "YieldHelper:";
 
 function exec(generator, callback) {
     function executor() {
